@@ -183,4 +183,4 @@ eval_data/
 dataset/Evaluation.md
 jupyter_notebook.slurm
 
-models/
+model/
