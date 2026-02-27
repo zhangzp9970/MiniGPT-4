@@ -24,7 +24,11 @@ from minigpt4.tasks import *
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Demo")
-    parser.add_argument("--cfg-path", required=True, help="path to configuration file.")
+    parser.add_argument(
+        "--cfg-path",
+        default="eval_configs/minigpt4_llama2_eval.yaml",
+        help="path to configuration file.",
+    )
     parser.add_argument("--gpu-id", type=int, default=0, help="specify the gpu to load the model.")
     parser.add_argument(
         "--options",
@@ -124,7 +128,7 @@ description = """<h3>This is the demo of MiniGPT-4. Upload your images and start
 article = """<p><a href='https://minigpt-4.github.io'><img src='https://img.shields.io/badge/Project-Page-Green'></a></p><p><a href='https://github.com/Vision-CAIR/MiniGPT-4'><img src='https://img.shields.io/badge/Github-Code-blue'></a></p><p><a href='https://raw.githubusercontent.com/Vision-CAIR/MiniGPT-4/main/MiniGPT_4.pdf'><img src='https://img.shields.io/badge/Paper-PDF-red'></a></p>
 """
 
-#TODO show examples below
+# TODO show examples below
 
 with gr.Blocks() as demo:
     gr.Markdown(title)
