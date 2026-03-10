@@ -263,8 +263,8 @@ class VisionTransformer(nn.Module):
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
         if use_abs_pos_emb:
             self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim))
-        else:
-            self.pos_embed = None
+        # else:
+        #     self.pos_embed = None
         self.pos_drop = nn.Dropout(p=drop_rate)
 
         if use_shared_rel_pos_bias:
@@ -430,7 +430,7 @@ def create_eva_vit_g(img_size=224,drop_path_rate=0.4,use_checkpoint=False,precis
     cached_file = download_cached_file(
         url, check_hash=False, progress=True
     )
-    state_dict = torch.load(cached_file, map_location="cpu")    
+    state_dict = torch.load(cached_file, map_location="cpu")#加载vit    
     interpolate_pos_embed(model,state_dict)
     
     incompatible_keys = model.load_state_dict(state_dict, strict=False)

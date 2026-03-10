@@ -107,16 +107,16 @@ class StoppingCriteriaSub(StoppingCriteria):
         return False
 
 
-CONV_VISION_Vicuna0 = Conversation(
-    system="Give the following image: <Img>ImageContent</Img>. "
-           "You will be able to see the image once I provide it to you. Please answer my questions.",
-    roles=("Human: ", "Assistant: "),
-    messages=[],
-    offset=2,
-    sep_style=SeparatorStyle.SINGLE,
-    sep="###",
-)
-
+# CONV_VISION_Vicuna0 = Conversation(
+#     system="Give the following image: <Img>ImageContent</Img>. "
+#            "You will be able to see the image once I provide it to you. Please answer my questions.",
+#     roles=("Human: ", "Assistant: "),
+#     messages=[],
+#     offset=2,
+#     sep_style=SeparatorStyle.SINGLE,
+#     sep="###",
+# )
+#对话格式
 CONV_VISION_LLama2 = Conversation(
     system="Give the following image: <Img>ImageContent</Img>. "
            "You will be able to see the image once I provide it to you. Please answer my questions.",
@@ -127,14 +127,14 @@ CONV_VISION_LLama2 = Conversation(
     sep="",
 )
 
-CONV_VISION_minigptv2 = Conversation(
-    system="",
-    roles=("<s>[INST] ", " [/INST]"),
-    messages=[],
-    offset=2,
-    sep_style=SeparatorStyle.SINGLE,
-    sep="",
-)
+# CONV_VISION_minigptv2 = Conversation(
+#     system="",
+#     roles=("<s>[INST] ", " [/INST]"),
+#     messages=[],
+#     offset=2,
+#     sep_style=SeparatorStyle.SINGLE,
+#     sep="",
+# )
 
 class Chat:
     def __init__(self, model, vis_processor, device='cuda:0', stopping_criteria=None):
@@ -144,9 +144,9 @@ class Chat:
 
         if stopping_criteria is not None:
             self.stopping_criteria = stopping_criteria
-        else:
-            stop_words_ids = [torch.tensor([2]).to(self.device)]
-            self.stopping_criteria = StoppingCriteriaList([StoppingCriteriaSub(stops=stop_words_ids)])
+        # else:
+        #     stop_words_ids = [torch.tensor([2]).to(self.device)]
+        #     self.stopping_criteria = StoppingCriteriaList([StoppingCriteriaSub(stops=stop_words_ids)])
 
     def ask(self, text, conv):
         if len(conv.messages) > 0 and conv.messages[-1][0] == conv.roles[0] \
@@ -158,7 +158,7 @@ class Chat:
     def answer_prepare(self, conv, img_list, max_new_tokens=300, num_beams=1, min_length=1, top_p=0.9,
                        repetition_penalty=1.05, length_penalty=1, temperature=1.0, max_length=2000):
         conv.append_message(conv.roles[1], None)
-        prompt = conv.get_prompt()
+        prompt = conv.get_prompt()#提示词
         embs = self.model.get_context_emb(prompt, img_list)
 
         current_max_len = embs.shape[1] + max_new_tokens
@@ -186,7 +186,7 @@ class Chat:
         generation_dict = self.answer_prepare(conv, img_list, **kargs)
         output_token = self.model_generate(**generation_dict)[0]
         output_text = self.model.llama_tokenizer.decode(output_token, skip_special_tokens=True)
-
+#输出结果，文字
         output_text = output_text.split('###')[0]  # remove the stop sign '###'
         output_text = output_text.split('Assistant:')[-1].strip()
 
@@ -215,13 +215,13 @@ class Chat:
             image = self.vis_processor(raw_image).unsqueeze(0).to(self.device)
         elif isinstance(image, Image.Image):
             raw_image = image
-            image = self.vis_processor(raw_image).unsqueeze(0).to(self.device)
+            image = self.vis_processor(raw_image).unsqueeze(0).to(self.device)#使用Blip2ImageEvalProcessor预处理
         elif isinstance(image, torch.Tensor):
             if len(image.shape) == 3:
                 image = image.unsqueeze(0)
             image = image.to(self.device)
 
-        image_emb, _ = self.model.encode_img(image)
+        image_emb, _ = self.model.encode_img(image)#minigpt4处理图像，变成embedding
         img_list.append(image_emb)
 
     def upload_img(self, image, conv, img_list):

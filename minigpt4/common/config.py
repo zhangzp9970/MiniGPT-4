@@ -22,14 +22,15 @@ class Config:
         # Register the config and configuration for setup
         registry.register("configuration", self)
 
-        user_config = self._build_opt_list(self.args.options)
+        # user_config = self._build_opt_list(self.args.options)
 
         config = OmegaConf.load(self.args.cfg_path)
 
         runner_config = self.build_runner_config(config)
-        model_config = self.build_model_config(config, **user_config)
+        model_config = self.build_model_config(config)
+        # model_config = self.build_model_config(config, **user_config)
         dataset_config = self.build_dataset_config(config)
-        evaluation_dataset_config = self.build_evaluation_dataset_config(config)
+        # evaluation_dataset_config = self.build_evaluation_dataset_config(config)
 
         # Validate the user-provided runner configuration
         # model and dataset configuration are supposed to be validated by the respective classes
@@ -38,7 +39,7 @@ class Config:
 
         # Override the default configuration with user options.
         self.config = OmegaConf.merge(
-            runner_config, model_config, dataset_config,evaluation_dataset_config, user_config
+            runner_config, model_config, dataset_config#,evaluation_dataset_config, user_config
         )
 
     def _validate_runner_config(self, runner_config):
@@ -111,7 +112,6 @@ class Config:
             )
 
         return dataset_config
-
 
     @staticmethod
     def build_evaluation_dataset_config(config):

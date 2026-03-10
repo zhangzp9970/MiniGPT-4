@@ -66,10 +66,10 @@ class MiniGPT4(MiniGPTBase):
 
             img_f_dim = self.Qformer.config.hidden_size
             print('Loading Q-Former Done')
-        else:
+        else:#没用qformer
             img_f_dim = self.visual_encoder.num_features * 4
             print('Do not use Q-Former here.')
-
+#线性映射层
         self.llama_proj = nn.Linear(
             img_f_dim, self.llama_model.config.hidden_size
         )

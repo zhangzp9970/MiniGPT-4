@@ -109,7 +109,7 @@ class Blip2ImageTrainProcessor(BlipImageBaseProcessor):
         )
 
 
-@registry.register_processor("blip2_image_eval")
+@registry.register_processor("blip2_image_eval")#图像变换处理
 class Blip2ImageEvalProcessor(BlipImageBaseProcessor):
     def __init__(self, image_size=224, mean=None, std=None):
         super().__init__(mean=mean, std=std)

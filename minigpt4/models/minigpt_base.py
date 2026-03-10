@@ -37,7 +37,7 @@ class MiniGPTBase(BaseModel):
         lora_dropout=0.05,
     ):
         super().__init__()
-
+        # 初始化llm
         self.llama_model, self.llama_tokenizer = self.init_llm(
             llama_model_path=llama_model,
             low_resource=low_resource,
@@ -47,7 +47,7 @@ class MiniGPTBase(BaseModel):
             lora_alpha=lora_alpha,
             lora_dropout=lora_dropout,
         )
-
+        # 初始化vit
         self.visual_encoder, self.ln_vision = self.init_vision_encoder(
             vit_model, img_size, drop_path_rate, use_grad_checkpoint, vit_precision, freeze_vit
         )
@@ -70,12 +70,13 @@ class MiniGPTBase(BaseModel):
         prompt_segs = prompt.split('<ImageHere>')
         assert len(prompt_segs) == len(img_list) + 1, "Unmatched numbers of image placeholders and images."
         seg_tokens = [
-            self.llama_tokenizer(
-                seg, return_tensors="pt", add_special_tokens=i==0).to(device).input_ids # only add bos to the first seg
+            self.llama_tokenizer(seg, return_tensors="pt", add_special_tokens=i == 0)
+            .to(device)
+            .input_ids  # only add bos to the first seg
             for i, seg in enumerate(prompt_segs)
-        ]
+        ]  # 文本变token再变embedding
         seg_embs = [self.embed_tokens(seg_t) for seg_t in seg_tokens]
-
+        #拼接文本和图像，以文本+图像+文本形式
         mixed_embs = [emb for pair in zip(seg_embs[:-1], img_list) for emb in pair] + [seg_embs[-1]]
         mixed_embs = torch.cat(mixed_embs, dim=1)
         return mixed_embs
@@ -127,7 +128,7 @@ class MiniGPTBase(BaseModel):
             max_length = max(emb_lens) if max(emb_lens) < self.max_context_len else self.max_context_len
             wrapped_embs = pad_emb.expand(len(emb_lens), max_length, -1).clone()
             wrapped_atts = torch.zeros([len(emb_lens), max_length], dtype=torch.int, device=img_embeds.device)
-            
+
             for i, emb in enumerate(emb_lists):
                 length = emb_lens[i] if emb_lens[i] < self.max_context_len else self.max_context_len
                 wrapped_embs[i, :length] = emb[:, :length]

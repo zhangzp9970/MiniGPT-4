@@ -12,7 +12,7 @@ from transformers import StoppingCriteriaList
 from minigpt4.common.config import Config
 from minigpt4.common.dist_utils import get_rank
 from minigpt4.common.registry import registry
-from minigpt4.conversation.conversation import Chat, CONV_VISION_Vicuna0, CONV_VISION_LLama2, StoppingCriteriaSub
+from minigpt4.conversation.conversation import Chat, CONV_VISION_LLama2, StoppingCriteriaSub
 
 # imports modules for registration
 from minigpt4.datasets.builders import *
@@ -56,29 +56,29 @@ def setup_seeds(config):
 #             Model Initialization
 # ========================================
 
-conv_dict = {'pretrain_vicuna0': CONV_VISION_Vicuna0,
+conv_dict = {
              'pretrain_llama2': CONV_VISION_LLama2}
 
-print('Initializing Chat')
+# print('Initializing Chat')
 args = parse_args()
 cfg = Config(args)
 
 model_config = cfg.model_cfg
 model_config.device_8bit = args.gpu_id
 model_cls = registry.get_model_class(model_config.arch)
-model = model_cls.from_config(model_config).to('cuda:{}'.format(args.gpu_id))
+model = model_cls.from_config(model_config).to('cuda:{}'.format(args.gpu_id))#minigpt4模型
 
 CONV_VISION = conv_dict[model_config.model_type]
-
+# 图像预处理？
 vis_processor_cfg = cfg.datasets_cfg.cc_sbu_align.vis_processor.train
 vis_processor = registry.get_processor_class(vis_processor_cfg.name).from_config(vis_processor_cfg)
-
+# 停止条件
 stop_words_ids = [[835], [2277, 29937]]
 stop_words_ids = [torch.tensor(ids).to(device='cuda:{}'.format(args.gpu_id)) for ids in stop_words_ids]
 stopping_criteria = StoppingCriteriaList([StoppingCriteriaSub(stops=stop_words_ids)])
 
 chat = Chat(model, vis_processor, device='cuda:{}'.format(args.gpu_id), stopping_criteria=stopping_criteria)
-print('Initialization Finished')
+# print('Initialization Finished')
 
 
 # ========================================
@@ -99,7 +99,7 @@ def upload_img(gr_img, text_input, chat_state):
         return None, None, gr.update(interactive=True), chat_state, None
     chat_state = CONV_VISION.copy()
     img_list = []
-    llm_message = chat.upload_img(gr_img, chat_state, img_list)
+    llm_message = chat.upload_img(gr_img, chat_state, img_list)#上传图片，还没有预处理
     chat.encode_img(img_list)
     return gr.update(interactive=False), gr.update(interactive=True, placeholder='Type and press Enter'), gr.update(value="Start Chatting", interactive=False), chat_state, img_list
 
@@ -107,6 +107,7 @@ def upload_img(gr_img, text_input, chat_state):
 def gradio_ask(user_message, chatbot, chat_state):
     if len(user_message) == 0:
         return gr.update(interactive=True, placeholder='Input should not be empty!'), chatbot, chat_state
+    user_message="describe this image"
     chat.ask(user_message, chat_state)
     chatbot = chatbot + [[user_message, None]]
     return '', chatbot, chat_state
@@ -130,12 +131,12 @@ article = """<p><a href='https://minigpt-4.github.io'><img src='https://img.shie
 
 # TODO show examples below
 
-with gr.Blocks() as demo:
+with gr.Blocks() as demo:#网页驱动程序
     gr.Markdown(title)
     gr.Markdown(description)
     gr.Markdown(article)
 
-    with gr.Row():
+    with gr.Row():#画网页的
         with gr.Column(scale=1):
             image = gr.Image(type="pil")
             upload_button = gr.Button(value="Upload & Start Chat", interactive=True, variant="primary")

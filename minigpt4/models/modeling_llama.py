@@ -73,7 +73,7 @@ class LlamaForCausalLM(LlamaForCausalLMOrig):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
-
+#输出结果
         hidden_states = outputs[0]
         if hasattr(self.config, 'pretraining_tp') and self.config.pretraining_tp > 1:
             lm_head_slices = self.lm_head.weight.split(self.vocab_size // self.config.pretraining_tp, dim=0)
