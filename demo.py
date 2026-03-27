@@ -63,7 +63,7 @@ def setup_seeds(config):
 #             Model Initialization
 # ========================================
 
-conv_dict = {"pretrain_llama2": CONV_VISION_LLama2}
+# conv_dict = {"pretrain_llama2": CONV_VISION_LLama2}
 
 # print('Initializing Chat')
 args = parse_args()
